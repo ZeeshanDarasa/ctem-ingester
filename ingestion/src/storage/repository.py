@@ -309,3 +309,20 @@ def ingest_events(session: Session, events: List[ExposureEventModel]) -> Dict[st
         'exposures_inserted': upsert_stats['inserted'],
         'exposures_updated': upsert_stats['updated'],
     }
+
+
+def batch_ingest_exposures(events: List[ExposureEventModel], session: Session) -> Dict[str, int]:
+    """
+    Batch ingest exposure events (alias for ingest_events with swapped arg order for backward compatibility).
+    
+    Args:
+        events: List of canonical exposure event models
+        session: Database session
+    
+    Returns:
+        Dict with stats: total_processed, events_inserted, exposures_inserted, exposures_updated
+    """
+    stats = ingest_events(session, events)
+    session.commit()
+    stats['total_processed'] = len(events)
+    return stats

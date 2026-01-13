@@ -1,0 +1,157 @@
+[
+  {
+    "template-id": "exposed-panel-laravel",
+    "info": {
+      "name": "Laravel Debug Mode Enabled",
+      "author": "pdteam",
+      "severity": "high",
+      "description": "Laravel application with debug mode enabled exposing sensitive information",
+      "tags": ["exposure", "laravel", "debug", "panel"]
+    },
+    "type": "http",
+    "host": "http://10.0.2.131:80",
+    "matched-at": "http://10.0.2.131:80/debug",
+    "extracted-results": ["Laravel v8.0"],
+    "timestamp": "2024-01-13T10:30:00Z",
+    "curl-command": "curl -X GET http://10.0.2.131:80/debug",
+    "matcher-name": "debug-enabled"
+  },
+  {
+    "template-id": "mongodb-unauth",
+    "info": {
+      "name": "MongoDB Unauthenticated Access",
+      "author": "pdteam",
+      "severity": "critical",
+      "description": "MongoDB instance accessible without authentication",
+      "tags": ["database", "mongodb", "unauth"]
+    },
+    "type": "network",
+    "host": "tcp://10.0.2.169:27017",
+    "matched-at": "tcp://10.0.2.169:27017",
+    "extracted-results": ["MongoDB 4.2.8"],
+    "timestamp": "2024-01-13T10:31:00Z",
+    "matcher-name": "mongodb-unauth"
+  },
+  {
+    "template-id": "git-config-exposure",
+    "info": {
+      "name": "Git Config File Exposed",
+      "author": "pdteam",
+      "severity": "medium",
+      "description": "Git configuration file accessible via HTTP",
+      "tags": ["exposure", "git", "vcs", "leak"]
+    },
+    "type": "http",
+    "host": "http://10.0.2.174:8080",
+    "matched-at": "http://10.0.2.174:8080/.git/config",
+    "timestamp": "2024-01-13T10:32:00Z",
+    "matcher-name": "git-config"
+  },
+  {
+    "template-id": "docker-api-unauth",
+    "info": {
+      "name": "Docker API Unauthenticated",
+      "author": "pdteam",
+      "severity": "critical",
+      "description": "Docker API accessible without authentication",
+      "tags": ["docker", "container", "api"]
+    },
+    "type": "http",
+    "host": "http://10.0.2.175:2375",
+    "matched-at": "http://10.0.2.175:2375/version",
+    "extracted-results": ["Docker Engine v20.10.7"],
+    "timestamp": "2024-01-13T10:33:00Z",
+    "matcher-name": "docker-unauth"
+  },
+  {
+    "template-id": "ssh-weak-algorithms",
+    "info": {
+      "name": "SSH Weak Algorithms Enabled",
+      "author": "pdteam",
+      "severity": "low",
+      "description": "SSH server supports weak cryptographic algorithms",
+      "tags": ["ssh", "admin", "weak-crypto"]
+    },
+    "type": "network",
+    "host": "tcp://10.0.2.178:22",
+    "matched-at": "tcp://10.0.2.178:22",
+    "timestamp": "2024-01-13T10:34:00Z",
+    "matcher-name": "ssh-weak"
+  },
+  {
+    "template-id": "kubernetes-dashboard",
+    "info": {
+      "name": "Kubernetes Dashboard Exposed",
+      "author": "pdteam",
+      "severity": "high",
+      "description": "Kubernetes dashboard accessible without authentication",
+      "tags": ["k8s", "kubernetes", "dashboard", "panel"]
+    },
+    "type": "http",
+    "host": "https://10.0.2.181:8443",
+    "matched-at": "https://10.0.2.181:8443/api/v1",
+    "timestamp": "2024-01-13T10:35:00Z",
+    "matcher-name": "k8s-dashboard"
+  },
+  {
+    "template-id": "smb-signing-disabled",
+    "info": {
+      "name": "SMB Signing Disabled",
+      "author": "pdteam",
+      "severity": "medium",
+      "description": "SMB server with signing disabled",
+      "tags": ["smb", "fileshare", "weak-config"]
+    },
+    "type": "network",
+    "host": "tcp://10.0.2.188:445",
+    "matched-at": "tcp://10.0.2.188:445",
+    "timestamp": "2024-01-13T10:36:00Z",
+    "matcher-name": "smb-signing"
+  },
+  {
+    "template-id": "env-file-disclosure",
+    "info": {
+      "name": "Environment File Disclosure",
+      "author": "pdteam",
+      "severity": "info",
+      "description": "Environment configuration file exposed",
+      "tags": ["exposure", "disclosure", "config"]
+    },
+    "type": "http",
+    "host": "http://10.0.2.189:3000",
+    "matched-at": "http://10.0.2.189:3000/.env",
+    "timestamp": "2024-01-13T10:37:00Z",
+    "matcher-name": "env-exposed"
+  },
+  {
+    "template-id": "mysql-default-credentials",
+    "info": {
+      "name": "MySQL Default Credentials",
+      "author": "pdteam",
+      "severity": "critical",
+      "description": "MySQL accessible with default credentials",
+      "tags": ["database", "mysql", "default-creds"]
+    },
+    "type": "network",
+    "host": "tcp://10.0.2.190:3306",
+    "matched-at": "tcp://10.0.2.190:3306",
+    "extracted-results": ["MySQL 5.7.31"],
+    "timestamp": "2024-01-13T10:38:00Z",
+    "matcher-name": "mysql-default"
+  },
+  {
+    "template-id": "vnc-no-auth",
+    "info": {
+      "name": "VNC Without Authentication",
+      "author": "pdteam",
+      "severity": "high",
+      "description": "VNC server accessible without authentication",
+      "tags": ["vnc", "admin", "remote-access"]
+    },
+    "type": "network",
+    "host": "tcp://10.0.2.191:5900",
+    "matched-at": "tcp://10.0.2.191:5900",
+    "timestamp": "2024-01-13T10:39:00Z",
+    "matcher-name": "vnc-unauth"
+  }
+]

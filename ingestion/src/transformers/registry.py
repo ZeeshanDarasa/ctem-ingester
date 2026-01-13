@@ -5,11 +5,13 @@ Simple transformer registry for extensibility.
 from typing import Optional
 from src.transformers.base import BaseTransformer
 from src.transformers.nmap_transformer import NmapTransformer
+from src.transformers.nuclei_transformer import NucleiTransformer
 
 
 # Registry of available transformers
 _TRANSFORMERS = {
-    'nmap': NmapTransformer()
+    'nmap': NmapTransformer(),
+    'nuclei': NucleiTransformer()
 }
 
 

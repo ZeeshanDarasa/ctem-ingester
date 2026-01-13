@@ -1,0 +1,85 @@
+{
+  "description": "Expected canonical output for nuclei_sample.json - This is a reference for structure, not exact match due to dynamic IDs and timestamps",
+  "expected_counts": {
+    "total_events": 10,
+    "exposure_classes": {
+      "debug_port_exposed": 2,
+      "db_exposed": 2,
+      "vcs_protocol_exposed": 1,
+      "container_api_exposed": 2,
+      "remote_admin_exposed": 2,
+      "fileshare_exposed": 1,
+      "http_content_leak": 0
+    }
+  },
+  "sample_event_structure": {
+    "schema_version": "1.0.0",
+    "@timestamp": "2024-01-13T10:30:00Z",
+    "event": {
+      "id": "dynamic-uuid-v7",
+      "kind": "event",
+      "category": ["network"],
+      "type": ["info"],
+      "action": "exposure_opened",
+      "severity": 80,
+      "correlation": {
+        "dedupe_key": "dynamic-sha256-hash"
+      }
+    },
+    "office": {
+      "id": "office-1",
+      "name": "Office-office-1"
+    },
+    "scanner": {
+      "id": "scanner-1",
+      "type": "nuclei",
+      "version": "unknown"
+    },
+    "target": {
+      "asset": {
+        "id": "10.0.2.131",
+        "ip": ["10.0.2.131"],
+        "hostname": null
+      }
+    },
+    "exposure": {
+      "id": "dynamic-sha256-hash",
+      "class": "debug_port_exposed",
+      "status": "open",
+      "vector": {
+        "transport": "tcp",
+        "protocol": "http",
+        "dst": {
+          "ip": "10.0.2.131",
+          "port": 80
+        },
+        "network_direction": "internal"
+      },
+      "service": {
+        "name": "exposed-panel-laravel",
+        "product": "Laravel v8.0",
+        "version": "8.0",
+        "tls": false,
+        "auth": "unknown",
+        "bind_scope": "unknown"
+      },
+      "first_seen": "2024-01-13T10:30:00Z",
+      "last_seen": "2024-01-13T10:30:00Z",
+      "description": "Laravel application with debug mode enabled exposing sensitive information"
+    }
+  },
+  "validation_rules": {
+    "event_id_format": "UUIDv7",
+    "exposure_id_format": "SHA256 hash",
+    "severity_range": [0, 100],
+    "required_fields": [
+      "schema_version",
+      "@timestamp",
+      "event",
+      "office",
+      "scanner",
+      "target",
+      "exposure"
+    ]
+  }
+}
