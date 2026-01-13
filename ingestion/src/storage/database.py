@@ -1,11 +1,11 @@
 """
-Simple database connection management.
+Simple database connection management with auto-initialization.
 """
 
 import os
 from contextlib import contextmanager
 from pathlib import Path
-from sqlalchemy import create_engine, Integer
+from sqlalchemy import create_engine, Integer, inspect
 from sqlalchemy.orm import sessionmaker, Session
 from sqlalchemy.ext.compiler import compiles
 
@@ -53,7 +53,8 @@ def get_session_factory():
 @contextmanager
 def get_db_session() -> Session:
     """
-    Get database session context manager.
+    Get database session context manager with auto-initialization.
+    Automatically ensures database tables exist before creating session.
     
     Usage:
         with get_db_session() as session:
@@ -61,6 +62,9 @@ def get_db_session() -> Session:
             session.add(obj)
             # Auto-commits on success, rolls back on error
     """
+    # Ensure database is initialized (auto-detection)
+    ensure_database_initialized(verbose=False)
+    
     factory = get_session_factory()
     session = factory()
     
@@ -74,7 +78,55 @@ def get_db_session() -> Session:
         session.close()
 
 
+def check_tables_exist(engine=None) -> bool:
+    """
+    Check if all required tables exist in the database.
+    
+    Args:
+        engine: SQLAlchemy engine (uses default if None)
+    
+    Returns:
+        True if all required tables exist, False otherwise
+    """
+    if engine is None:
+        engine = get_engine()
+    
+    inspector = inspect(engine)
+    existing_tables = set(inspector.get_table_names())
+    
+    # Required tables from storage models
+    required_tables = {'exposure_events', 'exposures_current', 'quarantined_files'}
+    
+    return required_tables.issubset(existing_tables)
+
+
+def ensure_database_initialized(verbose: bool = False):
+    """
+    Ensure database is initialized with automatic detection.
+    Creates tables if they don't exist (idempotent).
+    
+    Args:
+        verbose: If True, print initialization messages
+    
+    Returns:
+        SQLAlchemy engine
+    """
+    engine = get_engine()
+    
+    if not check_tables_exist(engine):
+        if verbose:
+            print("Initializing database tables...")
+        Base.metadata.create_all(engine)
+        if verbose:
+            print("✓ Database initialized successfully")
+    
+    return engine
+
+
 def init_database():
-    """Initialize database tables (idempotent)."""
+    """
+    Initialize database tables (idempotent).
+    Legacy function - prefer ensure_database_initialized().
+    """
     engine = get_engine()
     Base.metadata.create_all(engine)

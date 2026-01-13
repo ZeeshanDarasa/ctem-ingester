@@ -80,20 +80,40 @@ Extensibility rule
 
 5) Storage Requirements (SQLAlchemy, no DB lock-in)
 
-5.1 Tables (recommended)
+5.1 Database Initialization (auto-detection)
+
+Requirement: The ingestion service must automatically detect and initialize database tables on first run.
+	•	Auto-detection: Check if required tables exist using SQLAlchemy metadata inspection.
+	•	Idempotent creation: Create tables only if they don't exist (CREATE TABLE IF NOT EXISTS semantics).
+	•	Zero-config deployment: No manual database initialization scripts required.
+	•	Safe for restarts: Re-running ingestion with existing tables is a no-op.
+
+Implementation:
+	•	check_tables_exist(): Uses sqlalchemy.inspect() to verify presence of required tables.
+	•	ensure_database_initialized(): Creates tables via Base.metadata.create_all() if missing.
+	•	Automatic invocation: Called transparently in get_db_session() context manager.
+
+This enables true "drop and run" deployments where n8n can start calling the ingester immediately after container startup.
+
+5.2 Tables (recommended)
 
 A) exposure_events (append-only)
 	•	Primary key: event_id
 	•	Stores: timestamps, office_id, asset_id, exposure_id, class/status, port/ip/protocol, severity, plus raw_payload_json (sanitized) and evidence_hashes.
-	•	Purpose: time series, audit, “what changed when?”
+	•	Purpose: time series, audit, "what changed when?"
 
-B) exposures_current (upserted “latest state”)
-	•	Unique key: (office_id, exposure_id) (or just exposure_id if globally unique in your org—don’t assume).
+B) exposures_current (upserted "latest state")
+	•	Unique key: (office_id, exposure_id) (or just exposure_id if globally unique in your org—don't assume).
 	•	Fields: latest status, last_seen, first_seen, severity/risk_score, dst ip/port/protocol, plus stable dimensions for Metabase.
 
-This split keeps Metabase fast for “current exposure” dashboards while preserving history.
+C) quarantined_files (error tracking)
+	•	Primary key: id
+	•	Stores: filename, error_type, error_message, error_details_json, scanner_type, office_id, quarantined_at
+	•	Purpose: dead-letter queue for troubleshooting failed ingestions
 
-5.2 Upsert behavior
+This split keeps Metabase fast for "current exposure" dashboards while preserving history.
+
+5.3 Upsert behavior
 
 Requirement: The ingester must upsert into exposures_current:
 	•	On conflict, update:
@@ -150,10 +170,11 @@ Requirement: Generate deterministic identifiers when scanners don’t provide th
 
 8) Reliability & Observability Requirements
 	•	Idempotency: re-processing same event must not create duplicates in exposures_current.
+	•	Auto-initialization: database tables are automatically created on first run (zero manual setup).
 	•	Dead-letter handling: invalid payloads go to a quarantine log/table with validation errors (Pydantic error details are good).  ￼
 	•	Metrics:
 	•	ingestion rate, validation failures, upsert latency, batch sizes,
-	•	number of “open” exposures per office, per class.
+	•	number of "open" exposures per office, per class.
 
 ⸻
 

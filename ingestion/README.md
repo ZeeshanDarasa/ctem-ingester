@@ -8,14 +8,14 @@
 # Install dependencies
 pip install -r requirements.txt
 
-# Initialize database (first time only)
-python ingest.py dummy.xml --office-id=test --scanner-id=test --init-db
-
-# Process a scan file
+# Process a scan file (database auto-initializes on first run)
 python ingest.py /path/to/scan.xml --office-id=office-1 --scanner-id=scanner-1
 
 # JSON output (for n8n parsing)
 python ingest.py /path/to/scan.xml --office-id=office-1 --scanner-id=scanner-1 --json
+
+# Nuclei JSON support
+python ingest.py /path/to/nuclei.json --office-id=office-1 --scanner-id=scanner-1 --scanner-type=nuclei
 ```
 
 ## Usage
@@ -27,14 +27,16 @@ Arguments:
   file_path              Path to scan file (required)
   --office-id            Office identifier (required)
   --scanner-id           Scanner identifier (required)
-  --scanner-type         Scanner type (default: nmap)
+  --scanner-type         Scanner type: nmap, nuclei (default: nmap)
   --json                 Output JSON format
-  --init-db              Initialize database before processing
+  --init-db              Force database initialization (optional, auto-detects by default)
 
 Exit Codes:
   0  Success
   1  Error (file not found, parsing error, validation error)
 ```
+
+**Note**: Database tables are automatically created on first run if they don't exist. No manual initialization required!
 
 ### JSON Output
 
@@ -274,6 +276,12 @@ python ingest.py tests/fixtures/nmap_sample.xml \
 
 ## Core Features
 
+### Database Auto-Initialization
+- **Automatic table detection**: Checks if required tables exist on startup
+- **Idempotent schema creation**: Creates tables only if missing
+- **Zero-config deployment**: No manual database setup required
+- **Safe for concurrent operations**: Uses SQLAlchemy metadata inspection
+
 ### Security
 - **Secure XML parsing** with defusedxml (prevents XXE, entity expansion)
 - **Size limits**: 10MB max file size, 50-level max depth
@@ -313,7 +321,7 @@ Ensure the file path is absolute and accessible from the container/environment.
 Check that the XML is valid nmap output. Use `--json` flag to see detailed error messages.
 
 ### Database Errors
-Ensure the database directory is writable. Use `--init-db` flag to create tables.
+Ensure the database directory is writable. Database tables are automatically created on first run.
 
 ### Exit Code 1
 Run with `--json` flag to get structured error output:

@@ -1,6 +1,6 @@
 data/
 samples/
-**.pyc
+*.pyc
 .DS_Store
 ingestion/.DS_Store
 ingestion/__pycache__/

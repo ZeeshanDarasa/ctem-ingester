@@ -3,9 +3,12 @@
 Simple ingestion script for processing scan files.
 Can be called directly by n8n workflows.
 
+Database tables are automatically created if they don't exist (auto-initialization).
+
 Usage:
     python ingest.py /path/to/scan.xml --office-id=office-1 --scanner-id=scanner-1
     python ingest.py /path/to/scan.xml --office-id=office-1 --scanner-id=scanner-1 --json
+    python ingest.py /path/to/nuclei.json --office-id=office-1 --scanner-id=scanner-1 --scanner-type=nuclei
 """
 
 import sys
@@ -29,14 +32,16 @@ def main():
     parser.add_argument('--scanner-id', required=True, help='Scanner identifier')
     parser.add_argument('--scanner-type', default='nmap', help='Scanner type (default: nmap)')
     parser.add_argument('--json', action='store_true', help='Output JSON format')
-    parser.add_argument('--init-db', action='store_true', help='Initialize database before processing')
+    parser.add_argument('--init-db', action='store_true', help='Force database initialization (optional, auto-detects by default)')
     
     args = parser.parse_args()
     
     try:
-        # Initialize database if requested
+        # Force initialize database if explicitly requested (optional - auto-init happens anyway)
         if args.init_db:
             init_database()
+            if not args.json:
+                print("✓ Database initialized")
         
         # Validate file exists
         file_path = Path(args.file_path)
