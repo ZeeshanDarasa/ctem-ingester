@@ -1,0 +1,52 @@
+{
+  "schema_version": "1.0.0",
+  "@timestamp": "2026-01-13T10:00:00Z",
+  "event": {
+    "id": "evt-example",
+    "kind": "event",
+    "category": ["network"],
+    "type": ["info"],
+    "action": "exposure_opened",
+    "severity": 90
+  },
+  "office": {
+    "id": "office-1",
+    "name": "Office One"
+  },
+  "scanner": {
+    "id": "scanner-1",
+    "type": "nmap",
+    "version": "7.94"
+  },
+  "target": {
+    "asset": {
+      "id": "192.168.1.100",
+      "hostname": "dev-macbook.local",
+      "ip": ["192.168.1.100"],
+      "mac": "00:11:22:33:44:55"
+    }
+  },
+  "exposure": {
+    "id": "exp-example",
+    "class": "db_exposed",
+    "status": "open",
+    "vector": {
+      "transport": "tcp",
+      "protocol": "mysql",
+      "dst": {
+        "ip": "192.168.1.100",
+        "port": 3306
+      },
+      "network_direction": "internal"
+    },
+    "service": {
+      "name": "mysql",
+      "product": "MySQL",
+      "version": "8.0.32",
+      "auth": "unknown",
+      "bind_scope": "unknown"
+    },
+    "first_seen": "2026-01-13T10:00:00Z",
+    "last_seen": "2026-01-13T10:00:00Z"
+  }
+}

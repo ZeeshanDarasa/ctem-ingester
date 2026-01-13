@@ -1,0 +1,205 @@
+{ 
+  "$schema": "https://json-schema.org/draft/2020-12/schema", 
+  "$id": "com.yourco.office_exposure_event.schema.json", 
+  "title": "Office Exposure Event", 
+  "type": "object", 
+  "required": ["schema_version", "@timestamp", "event", "office", "scanner", "target", "exposure"], 
+  "properties": { 
+    "schema_version": { "type": "string", "description": "Schema version for evolution (e.g., 1.0.0)." }, 
+ 
+    "@timestamp": { "type": "string", "format": "date-time", "description": "When the exposure observation occurred." }, 
+ 
+    "event": { 
+      "type": "object", 
+      "required": ["id", "kind", "category", "type", "action", "severity"], 
+      "properties": { 
+        "id": { "type": "string", "description": "Unique ID for this log record." }, 
+        "kind": { "type": "string", "enum": ["alert", "state", "event"], "description": "High-level kind (ECS-style)." }, 
+        "category": { "type": "array", "items": { "type": "string" }, "description": "e.g., [\"network\"], [\"configuration\"]." }, 
+        "type": { "type": "array", "items": { "type": "string" }, "description": "e.g., [\"info\"], [\"denied\"], [\"indicator\"]." }, 
+        "action": { 
+          "type": "string", 
+          "enum": ["exposure_opened", "exposure_observed", "exposure_resolved", "exposure_suppressed"] 
+        }, 
+        "severity": { "type": "integer", "minimum": 0, "maximum": 100, "description": "Normalized severity for dashboards." }, 
+ 
+        "created": { "type": "string", "format": "date-time", "description": "When pipeline first read the event (ECS idea)." }, 
+        "ingested": { "type": "string", "format": "date-time", "description": "When stored centrally (ECS idea)." }, 
+ 
+        "reason": { "type": "string", "description": "Why this action/severity was assigned." }, 
+        "risk_score": { "type": "number", "minimum": 0, "maximum": 100, "description": "Optional computed risk score." }, 
+ 
+        "correlation": { 
+          "type": "object", 
+          "properties": { 
+            "scan_run_id": { "type": "string" }, 
+            "scan_policy_id": { "type": "string" }, 
+            "dedupe_key": { "type": "string", "description": "Hash of key fields for dedup." } 
+          } 
+        } 
+      } 
+    }, 
+ 
+    "office": { 
+      "type": "object", 
+      "required": ["id", "name"], 
+      "properties": { 
+        "id": { "type": "string", "description": "Stable office/site ID." }, 
+        "name": { "type": "string" }, 
+        "region": { "type": "string" }, 
+        "timezone": { "type": "string" }, 
+ 
+        "network_zone": { "type": "string", "description": "e.g., corp_wifi, dev_vlan, guest_wifi, wired." }, 
+        "ssid": { "type": "string" }, 
+        "vlan": { "type": "string" }, 
+        "subnet": { "type": "string" } 
+      } 
+    }, 
+ 
+    "scanner": { 
+      "type": "object", 
+      "required": ["id", "type"], 
+      "properties": { 
+        "id": { "type": "string", "description": "Scanner instance ID." }, 
+        "type": { "type": "string", "description": "e.g., office_scanner, passive_sensor." }, 
+        "version": { "type": "string" }, 
+        "ip": { "type": "string" }, 
+        "hostname": { "type": "string" } 
+      } 
+    }, 
+ 
+    "target": { 
+      "type": "object", 
+      "required": ["asset"], 
+      "properties": { 
+        "asset": { 
+          "type": "object", 
+          "required": ["id"], 
+          "properties": { 
+            "id": { "type": "string", "description": "Stable asset ID if you have one (MDM/EDR/NAC)." }, 
+            "hostname": { "type": "string" }, 
+            "ip": { "type": "array", "items": { "type": "string" } }, 
+            "mac": { "type": "string" }, 
+            "os": { "type": "string", "description": "e.g., macos, windows, linux, ios, android." }, 
+            "device_type": { "type": "string", "description": "laptop, desktop, phone, tablet, server." }, 
+            "managed": { "type": "boolean", "description": "True if enrolled in MDM/EDR." } 
+          } 
+        }, 
+        "owner": { 
+          "type": "object", 
+          "properties": { 
+            "user_id": { "type": "string" }, 
+            "email": { "type": "string" }, 
+            "team": { "type": "string" } 
+          } 
+        } 
+      } 
+    }, 
+ 
+    "exposure": { 
+      "type": "object", 
+      "required": ["id", "class", "status", "vector"], 
+      "properties": { 
+        "id": { "type": "string", "description": "Stable finding ID across observations." }, 
+        "class": { 
+          "type": "string", 
+          "enum": [ 
+            "http_content_leak", 
+            "vcs_protocol_exposed", 
+            "fileshare_exposed", 
+            "remote_admin_exposed", 
+            "db_exposed", 
+            "container_api_exposed", 
+            "debug_port_exposed", 
+            "service_advertised_mdns", 
+            "egress_tunnel_indicator", 
+            "unknown_service_exposed" 
+          ] 
+        }, 
+        "status": { "type": "string", "enum": ["open", "observed", "resolved", "suppressed"] }, 
+        "vector": { 
+          "type": "object", 
+          "required": ["transport", "protocol"], 
+          "properties": { 
+            "transport": { "type": "string", "enum": ["tcp", "udp", "icmp", "other"] }, 
+            "protocol": { "type": "string", "description": "http, https, smb, ssh, vnc, docker, git, mdns, etc." }, 
+            "src": { "type": "object", "properties": { "ip": { "type": "string" } } }, 
+            "dst": { 
+              "type": "object", 
+              "properties": { 
+                "ip": { "type": "string" }, 
+                "port": { "type": "integer", "minimum": 0, "maximum": 65535 } 
+              } 
+            }, 
+            "network_direction": { "type": "string", "enum": ["internal", "inbound", "outbound", "unknown"] }, 
+            "community_id": { "type": "string", "description": "Optional flow hash (ECS concept)." } 
+          } 
+        }, 
+ 
+        "service": { 
+          "type": "object", 
+          "properties": { 
+            "name": { "type": "string" }, 
+            "product": { "type": "string" }, 
+            "version": { "type": "string" }, 
+            "tls": { "type": "boolean" }, 
+            "auth": { "type": "string", "enum": ["unknown", "required", "not_required"] }, 
+            "bind_scope": { "type": "string", "enum": ["loopback_only", "local_subnet", "any", "unknown"] } 
+          } 
+        }, 
+ 
+        "resource": { 
+          "type": "object", 
+          "description": "What was exposed (path/share/export/repo name). Avoid contents.", 
+          "properties": { 
+            "type": { "type": "string", "enum": ["http_path", "smb_share", "nfs_export", "repo", "api_endpoint", "mdns_service", "domain"] }, 
+            "identifier": { "type": "string" }, 
+            "evidence_hash": { "type": "string", "description": "Hash of response/snippet to prove it existed without storing sensitive data." } 
+          } 
+        }, 
+ 
+        "data_class": { 
+          "type": "array", 
+          "items": { "type": "string", "enum": ["source_code", "secrets", "pii", "credentials", "internal_only", "unknown"] } 
+        }, 
+ 
+        "confidence": { "type": "number", "minimum": 0, "maximum": 1 }, 
+ 
+        "first_seen": { "type": "string", "format": "date-time" }, 
+        "last_seen": { "type": "string", "format": "date-time" } 
+      } 
+    }, 
+ 
+    "evidence": { 
+      "type": "array", 
+      "description": "Optional probe metadata (no secrets).", 
+      "items": { 
+        "type": "object", 
+        "properties": { 
+          "probe": { "type": "string", "description": "e.g., http_get, smb_enum, docker_ping, mdns_browse." }, 
+          "target": { "type": "string" }, 
+          "result": { "type": "string", "enum": ["success", "fail", "timeout", "blocked"] }, 
+          "http": { 
+            "type": "object", 
+            "properties": { 
+              "status_code": { "type": "integer" }, 
+              "title": { "type": "string" }, 
+              "server_header": { "type": "string" } 
+            } 
+          }, 
+          "raw_hash": { "type": "string", "description": "Hash of raw response (integrity/forensics)." } 
+        } 
+      } 
+    }, 
+ 
+    "disposition": { 
+      "type": "object", 
+      "properties": { 
+        "ticket": { "type": "string" }, 
+        "owner": { "type": "string" }, 
+        "sla": { "type": "string", "description": "e.g., P1-4h, P2-24h." }, 
+        "notes": { "type": "string" } 
+      } 
+    } 
+  } 
+} 

@@ -1,0 +1,58 @@
+version: '3.8'
+
+services:
+  # Ingestion API service - event-driven processing
+  ingestion:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    container_name: ctem-ingestion-api
+    ports:
+      - "8000:8000"
+    volumes:
+      # Shared volume for scan files (n8n writes, API reads)
+      - scan_data:/data/scans:ro
+      # DuckDB database (shared with Metabase)
+      - duckdb_data:/app/data
+    environment:
+      - DB_TYPE=duckdb
+      - DB_PATH=/app/data/exposures.duckdb
+      - API_HOST=0.0.0.0
+      - API_PORT=8000
+      - API_WORKERS=1
+      - LOG_LEVEL=INFO
+    restart: unless-stopped
+    depends_on:
+      - n8n
+      - metabase
+    networks:
+      - ctem-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
+  # Update n8n to share scan volume and can call ingestion API
+  n8n:
+    volumes:
+      - scan_data:/data/scans:rw
+    environment:
+      - SCAN_OUTPUT_DIR=/data/scans
+      - INGESTION_API_URL=http://ingestion:8000
+
+  # Update metabase to share duckdb volume (read-only)
+  metabase:
+    volumes:
+      - duckdb_data:/app/data:ro
+
+volumes:
+  scan_data:
+    driver: local
+  duckdb_data:
+    driver: local
+
+networks:
+  ctem-network:
+    driver: bridge
